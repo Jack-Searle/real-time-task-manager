@@ -1,65 +1,24 @@
 ## Backend
-
-HELP.md
-.gradle
+.gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+## Frontend
+node_modules/
+dist/
+dist-ssr/
+coverage/
 
-### VS Code ###
-.vscode/
-
-# Local config / secrets
+## Local Config / Secrets
 .env
 .env.*
 !.env.example
 *.local
-application-local.properties
-application-*.local.properties
 backend/src/main/resources/application-local.properties
 backend/src/main/resources/application-*.local.properties
 
-# Runtime / local database files
-*.db
-*.sqlite
-*.sqlite3
-*.h2.db
-*.mv.db
-*.trace.db
-
-
-## Frontend
-# Logs
-logs
+## Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -67,15 +26,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-coverage
-*.local
+## IDE / Editor
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
 
-# General
+## OS / Runtime
 .DS_Store
 Thumbs.db
+*.db
+*.sqlite
+*.sqlite3
+*.h2.db
+*.mv.db
+*.trace.db
 
-# Accidental root npm files. Keep frontend/package-lock.json tracked.
+## Repo Root Accidents
 /package-lock.json
