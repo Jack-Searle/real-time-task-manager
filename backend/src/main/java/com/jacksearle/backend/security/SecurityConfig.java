@@ -40,8 +40,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize ->
                         authorize
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers("/", "/index.html", "/favicon.svg", "/icons.svg").permitAll()
+                                .requestMatchers("/assets/**").permitAll()
+                                .requestMatchers("/login", "/register", "/verify-email").permitAll()
+                                .requestMatchers("/dashboard/**").permitAll()
+                                .requestMatchers("/actuator/health").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/ws/**").permitAll()
+                                .requestMatchers("/api/**").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
