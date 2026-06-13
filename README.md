@@ -25,7 +25,7 @@ Email variables:
 - `RESEND_API_KEY`
 - `RESEND_FROM`
 
-`RESEND_FROM` can be omitted for testing; the default is `Task Manager <onboarding@resend.dev>`. For production, use a sender from a domain verified in Resend.
+`RESEND_FROM` can be omitted for testing; the default is `onboarding@resend.dev`. For production, use a sender from a domain verified in Resend, such as `noreply@yourdomain.com`.
 
 ## Local Development
 

@@ -44,7 +44,7 @@ public class VerificationEmailService {
 
         String verificationUrl = frontendUrl.replaceAll("/+$", "") + "/verify-email?token=" + user.getVerificationToken();
         Map<String, Object> payload = Map.of(
-                "from", fromAddress,
+                "from", normalizeFromAddress(fromAddress),
                 "to", List.of(user.getEmail()),
                 "subject", "Verify your Task Manager account",
                 "text", """
@@ -79,5 +79,25 @@ public class VerificationEmailService {
                     ex);
             throw ex;
         }
+    }
+
+    private String normalizeFromAddress(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String normalized = value.trim();
+        if ((normalized.startsWith("\"") && normalized.endsWith("\""))
+                || (normalized.startsWith("'") && normalized.endsWith("'"))) {
+            normalized = normalized.substring(1, normalized.length() - 1).trim();
+        }
+
+        int start = normalized.indexOf('<');
+        int end = normalized.indexOf('>');
+        if (start >= 0 && end > start) {
+            return normalized.substring(start + 1, end).trim();
+        }
+
+        return normalized;
     }
 }
