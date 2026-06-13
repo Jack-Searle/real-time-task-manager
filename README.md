@@ -20,11 +20,12 @@ Required production environment variables:
 - `DB_PASSWORD`
 - `FRONTEND_URL`
 
-Optional mail variables:
+Email variables:
 
-- `MAIL_USERNAME`
-- `MAIL_PASSWORD`
-- `MAIL_FROM`
+- `RESEND_API_KEY`
+- `RESEND_FROM`
+
+`RESEND_FROM` can be omitted for testing; the default is `Task Manager <onboarding@resend.dev>`. For production, use a sender from a domain verified in Resend.
 
 ## Local Development
 
