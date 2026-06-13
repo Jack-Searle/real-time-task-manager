@@ -19,13 +19,13 @@ public class VerificationEmailService {
 
     private final RestClient restClient;
     private final String resendApiKey;
-    private final String backendUrl;
+    private final String frontendUrl;
     private final String fromAddress;
 
     public VerificationEmailService(
             RestClient.Builder restClientBuilder,
             @Value("${resend.api-key:}") String resendApiKey,
-            @Value("${app.backend-url}") String backendUrl,
+            @Value("${app.frontend-url}") String frontendUrl,
             @Value("${app.mail.from}") String fromAddress
     ) {
         this.restClient = restClientBuilder
@@ -33,7 +33,7 @@ public class VerificationEmailService {
                 .defaultHeader(HttpHeaders.USER_AGENT, "real-time-task-manager/1.0")
                 .build();
         this.resendApiKey = resendApiKey;
-        this.backendUrl = backendUrl;
+        this.frontendUrl = frontendUrl;
         this.fromAddress = fromAddress;
     }
 
@@ -42,7 +42,7 @@ public class VerificationEmailService {
             throw new IllegalStateException("RESEND_API_KEY must be configured before verification emails can be sent");
         }
 
-        String verificationUrl = backendUrl.replaceAll("/+$", "") + "/api/auth/verify-email/redirect?token=" + user.getVerificationToken();
+        String verificationUrl = frontendUrl.replaceAll("/+$", "") + "/verify-email?token=" + user.getVerificationToken();
         String firstName = user.getFirstName() == null || user.getFirstName().isBlank() ? "there" : user.getFirstName();
         Map<String, Object> payload = Map.of(
                 "from", normalizeFromAddress(fromAddress),
