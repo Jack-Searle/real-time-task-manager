@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { resendVerification, verifyEmail } from "../api/authApi.js";
 
 function VerifyEmailPage() {
     const [params] = useSearchParams();
     const location = useLocation();
+    const navigate = useNavigate();
     const token = params.get("token");
     const email = params.get("email") || "";
     const registered = params.get("registered") === "1";
@@ -12,6 +13,7 @@ function VerifyEmailPage() {
     const [message, setMessage] = useState(location.state?.message || "");
     const [resendEmail, setResendEmail] = useState(email);
     const [resending, setResending] = useState(false);
+    const verifiedTokenRef = useRef(null);
 
     const title = useMemo(() => {
         if (status === "success") return "Email verified";
@@ -24,19 +26,41 @@ function VerifyEmailPage() {
         if (!token) {
             return;
         }
+        if (verifiedTokenRef.current === token) {
+            return;
+        }
+        verifiedTokenRef.current = token;
+
         let active = true;
+        let redirectTimeout;
 
         const run = async () => {
             try {
                 await verifyEmail(token);
                 if (active) {
                     setStatus("success");
-                    setMessage("Your email is verified. You can now log in.");
+                    setMessage("Your email has been verified. Taking you to login...");
+                    redirectTimeout = window.setTimeout(() => {
+                        navigate("/login", {
+                            replace: true,
+                            state: {
+                                message: "Your email has been verified. You can now log in.",
+                            },
+                        });
+                    }, 1800);
                 }
             } catch (requestError) {
                 if (active) {
                     setStatus("failed");
-                    setMessage(requestError.response?.data?.message || "The verification link is invalid or expired.");
+                    setMessage(requestError.response?.data?.message || "The verification link is invalid or expired. Taking you to login...");
+                    redirectTimeout = window.setTimeout(() => {
+                        navigate("/login", {
+                            replace: true,
+                            state: {
+                                message: "If your email has already been verified, you can log in.",
+                            },
+                        });
+                    }, 1800);
                 }
             }
         };
@@ -45,8 +69,9 @@ function VerifyEmailPage() {
 
         return () => {
             active = false;
+            window.clearTimeout(redirectTimeout);
         };
-    }, [token]);
+    }, [navigate, token]);
 
     const handleResend = async (event) => {
         event.preventDefault();
@@ -69,8 +94,11 @@ function VerifyEmailPage() {
             <section className="auth-panel">
                 <h1>{title}</h1>
                 {message && <p className={status === "failed" ? "error" : "success"}>{message}</p>}
-                {status === "success" ? (
-                    <Link className="button full-width" to="/login">Login</Link>
+                {status === "success" || (token && status === "failed") ? (
+                    <div className="form">
+                        <p className="muted">Redirecting to login...</p>
+                        <Link className="button full-width" to="/login">Go to login</Link>
+                    </div>
                 ) : (
                     <form className="form" onSubmit={handleResend}>
                         <label>

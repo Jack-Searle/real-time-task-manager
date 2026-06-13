@@ -19,6 +19,7 @@ Required production environment variables:
 - `DB_USERNAME`
 - `DB_PASSWORD`
 - `FRONTEND_URL`
+- `BACKEND_URL`
 
 Email variables:
 
@@ -26,6 +27,8 @@ Email variables:
 - `RESEND_FROM`
 
 `RESEND_FROM` can be omitted for testing; the default is `onboarding@resend.dev`. For production, use a sender from a domain verified in Resend, such as `noreply@yourdomain.com`.
+
+For a single-container deployment, set `BACKEND_URL` to the same public URL as `FRONTEND_URL`. For local development, use `FRONTEND_URL=http://localhost:5173` and `BACKEND_URL=http://localhost:8080`.
 
 ## Local Development
 

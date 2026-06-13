@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { login } from "../api/authApi.js";
 import { useAuthStore } from "../store/authStore.js";
 
@@ -8,8 +8,21 @@ function LoginPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const location = useLocation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const setAuth = useAuthStore((state) => state.setAuth);
+    const token = useAuthStore((state) => state.token);
+    const verified = searchParams.get("verified") === "1";
+    const invalidVerification = searchParams.get("verification") === "invalid";
+    const successMessage = location.state?.message || (verified ? "Your email has been verified. You can now log in." : "");
+    const verificationMessage = invalidVerification ? "This verification link is invalid or expired. If your account is already verified, log in below." : "";
+
+    useEffect(() => {
+        if (verified && token) {
+            navigate("/dashboard", { replace: true });
+        }
+    }, [navigate, token, verified]);
 
     const handleChange = (event) => {
         setForm((current) => ({
@@ -38,6 +51,8 @@ function LoginPage() {
         <main className="auth-page">
             <section className="auth-panel">
                 <h1>Login</h1>
+                {successMessage && <p className="success">{successMessage}</p>}
+                {verificationMessage && <p className="error">{verificationMessage}</p>}
                 {error && <p className="error">{error}</p>}
 
                 <form className="form" onSubmit={handleSubmit}>

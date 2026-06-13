@@ -60,12 +60,13 @@ public class AuthService {
     public void verifyEmail(String token) {
         User user = userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new BadRequestException("Verification link is invalid"));
+        if (user.isEmailVerified()) {
+            return;
+        }
         if (user.getVerificationTokenExpiry() == null || user.getVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Verification link has expired");
         }
         user.setEmailVerified(true);
-        user.setVerificationToken(null);
-        user.setVerificationTokenExpiry(null);
         userRepository.save(user);
     }
 
