@@ -14,12 +14,14 @@ function TaskList({ column, tasks, onCreateTask, onUpdateTask, onDeleteTask, onR
         }
 
         event.preventDefault();
+        event.stopPropagation();
         onReorderTask(taskId, sourceColumnId, column.id);
     };
 
     const handleDragOver = (event) => {
         if (event.dataTransfer.types.includes("application/x-task-id")) {
             event.preventDefault();
+            event.stopPropagation();
         }
     };
 

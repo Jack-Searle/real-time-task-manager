@@ -66,8 +66,8 @@ public class BoardInviteService {
                 LocalDateTime.now().plusDays(7)
         );
         BoardInviteResponse response = toResponse(boardInviteRepository.save(invite));
-        boardEventPublisher.publishToUser(
-                invitedUser.getEmail(),
+        boardEventPublisher.publishToUserTopic(
+                invitedUser.getId(),
                 BoardEventType.INVITE_CREATED,
                 boardId,
                 null,

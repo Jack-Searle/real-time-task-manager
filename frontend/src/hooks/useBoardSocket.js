@@ -113,10 +113,10 @@ export function useBoardSocket(boardId, onEvent) {
     }, [boardId, onEvent]);
 }
 
-export function useInviteSocket(onInvite) {
+export function useInviteSocket(userId, onInvite) {
     useEffect(() => {
         const token = getToken();
-        if (!token) {
+        if (!token || !userId) {
             return undefined;
         }
 
@@ -127,7 +127,7 @@ export function useInviteSocket(onInvite) {
             },
             reconnectDelay: 5000,
             onConnect: () => {
-                client.subscribe("/user/queue/invites", (message) => {
+                client.subscribe(`/topic/users/${userId}/invites`, (message) => {
                     onInvite(JSON.parse(message.body));
                 });
             },
@@ -138,5 +138,5 @@ export function useInviteSocket(onInvite) {
         return () => {
             client.deactivate();
         };
-    }, [onInvite]);
+    }, [userId, onInvite]);
 }

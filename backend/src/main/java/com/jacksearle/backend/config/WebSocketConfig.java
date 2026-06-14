@@ -93,20 +93,34 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private void authorizeSubscription(StompHeaderAccessor accessor) {
         String destination = accessor.getDestination();
-        if (destination == null || !destination.startsWith("/topic/boards/")) {
-            if (destination != null && destination.startsWith("/user/") && accessor.getUser() == null) {
-                throw new IllegalArgumentException("Websocket authentication is required");
-            }
+        if (destination == null) {
             return;
         }
         if (accessor.getUser() == null) {
             throw new IllegalArgumentException("Websocket authentication is required");
+        }
+        if (destination.startsWith("/topic/users/")) {
+            authorizeUserSubscription(accessor, destination);
+            return;
+        }
+        if (!destination.startsWith("/topic/boards/")) {
+            return;
         }
         Long boardId = Long.valueOf(destination.substring("/topic/boards/".length()));
         String email = accessor.getUser().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Invalid websocket user"));
         if (boardMemberRepository.findByBoardIdAndUserId(boardId, user.getId()).isEmpty()) {
             throw new IllegalArgumentException("You do not have access to this board");
+        }
+    }
+
+    private void authorizeUserSubscription(StompHeaderAccessor accessor, String destination) {
+        String suffix = destination.substring("/topic/users/".length());
+        String userId = suffix.replaceFirst("/.*$", "");
+        String email = accessor.getUser().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Invalid websocket user"));
+        if (!String.valueOf(user.getId()).equals(userId)) {
+            throw new IllegalArgumentException("You do not have access to this user topic");
         }
     }
 
