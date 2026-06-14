@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { getWebSocketUrl } from "../api/baseUrl.js";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
-const wsUrl = apiBaseUrl.replace(/\/api\/?$/, "") + "/ws";
+const wsUrl = getWebSocketUrl();
 
 function sortByPosition(items) {
     return [...(items || [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
@@ -111,4 +111,32 @@ export function useBoardSocket(boardId, onEvent) {
             client.deactivate();
         };
     }, [boardId, onEvent]);
+}
+
+export function useInviteSocket(onInvite) {
+    useEffect(() => {
+        const token = getToken();
+        if (!token) {
+            return undefined;
+        }
+
+        const client = new Client({
+            webSocketFactory: () => new SockJS(wsUrl),
+            connectHeaders: {
+                Authorization: `Bearer ${token}`,
+            },
+            reconnectDelay: 5000,
+            onConnect: () => {
+                client.subscribe("/user/queue/invites", (message) => {
+                    onInvite(JSON.parse(message.body));
+                });
+            },
+        });
+
+        client.activate();
+
+        return () => {
+            client.deactivate();
+        };
+    }, [onInvite]);
 }

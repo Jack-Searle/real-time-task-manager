@@ -4,6 +4,7 @@ import com.jacksearle.backend.board.BoardMemberRepository;
 import com.jacksearle.backend.security.JwtService;
 import com.jacksearle.backend.user.User;
 import com.jacksearle.backend.user.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -26,26 +27,35 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final BoardMemberRepository boardMemberRepository;
+    private final String allowedOriginPatterns;
+    private final String frontendUrl;
 
     public WebSocketConfig(
             JwtService jwtService,
             UserRepository userRepository,
-            BoardMemberRepository boardMemberRepository
+            BoardMemberRepository boardMemberRepository,
+            @Value("${app.websocket.allowed-origin-patterns:}") String allowedOriginPatterns,
+            @Value("${app.frontend-url:http://localhost:5173}") String frontendUrl
     ) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.boardMemberRepository = boardMemberRepository;
+        this.allowedOriginPatterns = allowedOriginPatterns;
+        this.frontendUrl = frontendUrl;
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns(parseAllowedOriginPatterns())
+                .withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue");
         registry.setApplicationDestinationPrefixes("/app");
+        registry.setUserDestinationPrefix("/user");
     }
 
     @Override
@@ -84,6 +94,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private void authorizeSubscription(StompHeaderAccessor accessor) {
         String destination = accessor.getDestination();
         if (destination == null || !destination.startsWith("/topic/boards/")) {
+            if (destination != null && destination.startsWith("/user/") && accessor.getUser() == null) {
+                throw new IllegalArgumentException("Websocket authentication is required");
+            }
             return;
         }
         if (accessor.getUser() == null) {
@@ -95,5 +108,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         if (boardMemberRepository.findByBoardIdAndUserId(boardId, user.getId()).isEmpty()) {
             throw new IllegalArgumentException("You do not have access to this board");
         }
+    }
+
+    private String[] parseAllowedOriginPatterns() {
+        String origins = String.join(",",
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                frontendUrl == null ? "" : frontendUrl,
+                allowedOriginPatterns == null ? "" : allowedOriginPatterns
+        );
+
+        return List.of(origins.split(","))
+                .stream()
+                .map(String::trim)
+                .filter(pattern -> !pattern.isBlank())
+                .toArray(String[]::new);
     }
 }

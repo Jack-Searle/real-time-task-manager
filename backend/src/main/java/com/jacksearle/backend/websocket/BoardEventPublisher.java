@@ -20,7 +20,17 @@ public class BoardEventPublisher {
         BoardEvent event = new BoardEvent(eventType, boardId, taskId, Instant.now(), data);
 
         Runnable publisher = () -> messagingTemplate.convertAndSend("/topic/boards/" + boardId, event);
+        publishAfterCommit(publisher);
+    }
 
+    public void publishToUser(String username, BoardEventType eventType, Long boardId, Long taskId, Map<String, Object> data) {
+        BoardEvent event = new BoardEvent(eventType, boardId, taskId, Instant.now(), data);
+
+        Runnable publisher = () -> messagingTemplate.convertAndSendToUser(username, "/queue/invites", event);
+        publishAfterCommit(publisher);
+    }
+
+    private void publishAfterCommit(Runnable publisher) {
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override

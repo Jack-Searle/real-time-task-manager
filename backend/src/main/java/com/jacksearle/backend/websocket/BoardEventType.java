@@ -10,5 +10,6 @@ public enum BoardEventType {
     TASK_MOVED,
     TASK_DELETED,
     MEMBER_ADDED,
-    MEMBER_REMOVED
+    MEMBER_REMOVED,
+    INVITE_CREATED
 }

@@ -5,6 +5,7 @@ import BoardList from "../components/boards/BoardList.jsx";
 import CreateBoardModal from "../components/boards/CreateBoardModal.jsx";
 import DeleteBoardModal from "../components/boards/DeleteBoardModal.jsx";
 import { useAuthStore } from "../store/authStore.js";
+import { useNotificationStore } from "../store/notificationStore.js";
 
 const sameId = (left, right) => String(left) === String(right);
 
@@ -45,7 +46,6 @@ function DashboardPage() {
     const [boards, setBoards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [invites, setInvites] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [boardToDelete, setBoardToDelete] = useState(null);
     const [leavingBoardId, setLeavingBoardId] = useState(null);
@@ -53,6 +53,8 @@ function DashboardPage() {
     const [showSortMenu, setShowSortMenu] = useState(false);
     const sortRef = useRef(null);
     const user = useAuthStore((state) => state.user);
+    const invites = useNotificationStore((state) => state.pendingInvites);
+    const setPendingInvites = useNotificationStore((state) => state.setPendingInvites);
 
     useEffect(() => {
         let active = true;
@@ -66,7 +68,7 @@ function DashboardPage() {
 
                 if (active) {
                     setBoards(data);
-                    setInvites(inviteData);
+                    setPendingInvites(inviteData);
                 }
             } catch (requestError) {
                 if (active) {
@@ -84,7 +86,7 @@ function DashboardPage() {
         return () => {
             active = false;
         };
-    }, []);
+    }, [setPendingInvites]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {

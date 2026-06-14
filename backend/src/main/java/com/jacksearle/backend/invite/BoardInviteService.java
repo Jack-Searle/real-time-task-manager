@@ -65,7 +65,15 @@ public class BoardInviteService {
                 UUID.randomUUID().toString(),
                 LocalDateTime.now().plusDays(7)
         );
-        return toResponse(boardInviteRepository.save(invite));
+        BoardInviteResponse response = toResponse(boardInviteRepository.save(invite));
+        boardEventPublisher.publishToUser(
+                invitedUser.getEmail(),
+                BoardEventType.INVITE_CREATED,
+                boardId,
+                null,
+                Map.of("invite", response)
+        );
+        return response;
     }
 
     @Transactional

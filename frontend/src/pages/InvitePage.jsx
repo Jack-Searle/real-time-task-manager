@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { acceptInvite, declineInvite } from "../api/boardApi.js";
+import { useNotificationStore } from "../store/notificationStore.js";
 
 function InvitePage() {
     const { token } = useParams();
@@ -8,12 +9,14 @@ function InvitePage() {
     const [status, setStatus] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const removePendingInvite = useNotificationStore((state) => state.removePendingInvite);
 
     const respond = async (action) => {
         setLoading(true);
         setError("");
         try {
             const invite = action === "accept" ? await acceptInvite(token) : await declineInvite(token);
+            removePendingInvite(invite.id);
             setStatus(action === "accept" ? `Joined ${invite.boardName}` : `Declined invite to ${invite.boardName}`);
             if (action === "accept") {
                 navigate(`/dashboard/boards/${invite.boardId}`);
