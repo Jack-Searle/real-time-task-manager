@@ -4,6 +4,7 @@ import com.jacksearle.backend.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +14,15 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final String secretKey = "your-very-secret-key-at-least-32-chars!!";
+    private final String secretKey;
     private final long expirationTime = 1000 * 60 * 60 * 24;
+
+    public JwtService(@Value("${JWT_KEY:}") String secretKey) {
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalStateException("JWT_KEY must be configured");
+        }
+        this.secretKey = secretKey;
+    }
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
